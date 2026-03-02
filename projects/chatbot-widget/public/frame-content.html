@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-MZ" style="height: 100%;">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Expires" content="Wed, 01 Jan 1998 1:00:00 GMT">
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Content-Language" content="pt">
+	<meta http-equiv="Author" content="CEDSIF">
+	<meta name="Copyright" content="Copyright 2003-2026 CEDSIF.">
+	<link rel="icon" href="favicon.ico">
+
+	<!-- Angular Widget Scripts (carregados do servidor de desenvolvimento) -->
+	<script src="http://localhost:4202/polyfills.js" type="module"></script>
+	<script src="http://localhost:4202/main.js" type="module"></script>
+
+	<!-- Estilos para mensagens de erro e warning -->
+	<style>
+		.error-box {
+			background-color: #ffebee;
+			border: 2px solid #f44336;
+			border-left: 5px solid #d32f2f;
+			border-radius: 4px;
+			padding: 15px;
+			margin: 20px 0;
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+		}
+
+		.warning-box {
+			background-color: #fff9e6;
+			border: 2px solid #ff9800;
+			border-left: 5px solid #f57c00;
+			border-radius: 4px;
+			padding: 15px;
+			margin: 20px 0;
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+		}
+
+		.error-icon {
+			flex-shrink: 0;
+			width: 24px;
+			height: 24px;
+			background-color: #f44336;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: bold;
+			font-size: 18px;
+			line-height: 1;
+		}
+
+		.warning-icon {
+			flex-shrink: 0;
+			width: 24px;
+			height: 24px;
+			background-color: #ff9800;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: bold;
+			font-size: 18px;
+			line-height: 1;
+		}
+
+		.error-content, .warning-content {
+			flex: 1;
+		}
+
+		.error_message {
+			color: #c62828;
+			font-weight: bold;
+			margin: 0;
+		}
+
+		.warning_message {
+			color: #e65100;
+			font-weight: bold;
+			margin: 0;
+		}
+
+		.error-details, .warning-details {
+			margin-top: 10px;
+		}
+
+		.error-details a, .warning-details a {
+			color: #1976d2;
+			text-decoration: underline;
+			cursor: pointer;
+		}
+
+		.error-details a:hover, .warning-details a:hover {
+			color: #0d47a1;
+		}
+
+		.details-box {
+			background-color: #fafafa;
+			border: 1px solid #e0e0e0;
+			border-radius: 4px;
+			padding: 15px;
+			margin: 10px 0 20px 0;
+			font-family: 'Courier New', monospace;
+			font-size: 12px;
+			color: #333;
+		}
+
+		.details-box h4 {
+			margin: 0 0 10px 0;
+			font-size: 13px;
+			font-weight: bold;
+			color: #555;
+			font-family: Arial, sans-serif;
+		}
+
+		.details-box a {
+			color: #1976d2;
+			text-decoration: underline;
+			cursor: pointer;
+			font-family: Arial, sans-serif;
+		}
+
+		.details-box a:hover {
+			color: #0d47a1;
+		}
+
+		.stack-trace-content {
+			background-color: #fff;
+			border: 1px solid #ddd;
+			border-radius: 3px;
+			padding: 10px;
+			margin-top: 10px;
+			white-space: pre-wrap;
+			overflow-x: auto;
+			max-height: 300px;
+			overflow-y: auto;
+		}
+
+		.aprovacoes-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			font-size: 13px;
+			background-color: #fff;
+		}
+
+		.aprovacoes-table th {
+			background-color: #f5f5f5;
+			padding: 8px;
+			text-align: left;
+			border-bottom: 2px solid #ddd;
+			font-weight: bold;
+		}
+
+		.aprovacoes-table td {
+			padding: 8px;
+			border-bottom: 1px solid #eee;
+		}
+
+		.aprovacoes-table tr:hover {
+			background-color: #fafafa;
+		}
+
+		.status-tratado {
+			color: #4CAF50;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body class="contentBody mat-typography" style="height: 93%; background-color: rgb(255, 255, 255); background-image: url(&quot;env-test.png&quot;); background-repeat: repeat;">
+	<!-- Conteúdo Principal do e-SISTAFE -->
+	<div class="contentDiv">
+		<div id="error_panel" class="error_message"></div>
+
+		<!-- Container para mensagens de erro/warning (dinâmico) -->
+		<div id="message-container"></div>
+	</div>
+
+	<!-- ============================================ -->
+	<!-- WIDGET ANGULAR DO CHATBOT CEDSIF             -->
+	<!-- Custom Element - Web Component               -->
+	<!-- ============================================ -->
+	<cedsif-chatbot
+		api-url="http://localhost:8080"
+		module="SUPORTE"
+		title="Assistente e-SISTAFE"
+		position="bottom-right">
+	</cedsif-chatbot>
+
+	<!-- e-SISTAFE Legacy Scripts -->
+	<script type="text/javascript">
+		document.body.style.height = "93%";
+
+		// Função para mostrar/esconder stack trace
+		function toggleStackTrace() {
+			var stackTrace = document.getElementById('stack-trace');
+			if (stackTrace.style.display === 'none') {
+				stackTrace.style.display = 'block';
+			} else {
+				stackTrace.style.display = 'none';
+			}
+		}
+
+		// Função para mostrar diferentes tipos de erros
+		function showError(errorType) {
+			var container = document.getElementById('message-container');
+			var html = '';
+
+			switch(errorType) {
+				case 'tx-em-curso':
+					html = `
+						<div class="error-box">
+							<div class="error-icon">✕</div>
+							<div class="error-content">
+								<span class="error_message">Já existe uma TX em curso. Aguarde.</span>
+							</div>
+						</div>
+						<div class="details-box">
+							<h4><a href="#" onclick="toggleStackTrace(); return false;">📋 Detalhes Técnicos</a></h4>
+							<div id="stack-trace" style="display: none;">
+								<div class="stack-trace-content">TransactionInProgressException
+Type Code: 981273489723894
+Unique Id: TX-2026-027-135642
+Message: Já existe uma TX em curso. Aguarde.
+
+at mz.gov.cedsif.execucao.action.CabimentoAction.execute(CabimentoAction.java:142)
+at org.apache.struts.action.RequestProcessor.processActionPerform(RequestProcessor.java:425)
+at org.apache.struts.action.RequestProcessor.process(RequestProcessor.java:228)
+at org.apache.struts.action.ActionServlet.process(ActionServlet.java:1913)
+at org.apache.struts.action.ActionServlet.doPost(ActionServlet.java:462)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:755)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:847)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:295)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:214)
+at org.springframework.orm.hibernate3.support.OpenSessionInViewFilter.doFilterInternal(OpenSessionInViewFilter.java:198)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:75)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:246)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:214)
+at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:231)
+at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:149)
+at org.jboss.as.web.session.ClusteredSessionValve.handleRequest(ClusteredSessionValve.java:134)
+at org.jboss.as.web.session.ClusteredSessionValve.invoke(ClusteredSessionValve.java:99)
+at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:151)
+at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)
+at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:854)
+at java.lang.Thread.run(Thread.java:745)</div>
+							</div>
+						</div>`;
+					break;
+
+				case 'nullpointer':
+					html = `
+						<div class="error-box">
+							<div class="error-icon">✕</div>
+							<div class="error-content">
+								<span class="error_message">Erro ao consultar saldo: Referência nula detectada</span>
+							</div>
+						</div>
+						<div class="details-box">
+							<h4><a href="#" onclick="toggleStackTrace(); return false;">📋 Detalhes Técnicos</a></h4>
+							<div id="stack-trace" style="display: none;">
+								<div class="stack-trace-content">java.lang.NullPointerException
+Type Code: NPE-782364928374
+Unique Id: SALDO-2026-027-140523
+Message: Cannot invoke method getSaldoDisponivel() on null object
+
+at mz.gov.cedsif.contabilidade.service.SaldoService.consultarSaldo(SaldoService.java:87)
+at mz.gov.cedsif.contabilidade.action.SaldoAction.execute(SaldoAction.java:52)
+at org.apache.struts.action.RequestProcessor.processActionPerform(RequestProcessor.java:425)
+at org.apache.struts.action.RequestProcessor.process(RequestProcessor.java:228)
+at org.apache.struts.action.ActionServlet.process(ActionServlet.java:1913)
+at org.apache.struts.action.ActionServlet.doGet(ActionServlet.java:449)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:734)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:847)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:295)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:214)
+at org.springframework.orm.hibernate3.support.OpenSessionInViewFilter.doFilterInternal(OpenSessionInViewFilter.java:198)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:75)
+at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:231)
+at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:149)
+at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)
+at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:854)
+at java.lang.Thread.run(Thread.java:745)</div>
+							</div>
+						</div>`;
+					break;
+
+				case 'classcast':
+					html = `
+						<div class="error-box">
+							<div class="error-icon">✕</div>
+							<div class="error-content">
+								<span class="error_message">Erro inesperado ao gerar relatório: Tipo de dados incompatível</span>
+							</div>
+						</div>
+						<div class="details-box">
+							<h4><a href="#" onclick="toggleStackTrace(); return false;">📋 Detalhes Técnicos</a></h4>
+							<div id="stack-trace" style="display: none;">
+								<div class="stack-trace-content">java.lang.ClassCastException
+Type Code: CCE-192837465019
+Unique Id: REL-2026-027-142817
+Message: java.lang.String cannot be cast to java.math.BigDecimal
+
+at mz.gov.cedsif.relatorios.generator.RelatorioExecucaoGenerator.gerarDados(RelatorioExecucaoGenerator.java:234)
+at mz.gov.cedsif.relatorios.action.RelatorioAction.gerarRelatorio(RelatorioAction.java:128)
+at mz.gov.cedsif.relatorios.action.RelatorioAction.execute(RelatorioAction.java:67)
+at org.apache.struts.action.RequestProcessor.processActionPerform(RequestProcessor.java:425)
+at org.apache.struts.action.RequestProcessor.process(RequestProcessor.java:228)
+at org.apache.struts.action.ActionServlet.process(ActionServlet.java:1913)
+at org.apache.struts.action.ActionServlet.doPost(ActionServlet.java:462)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:755)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:847)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:295)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:214)
+at org.springframework.orm.hibernate3.support.OpenSessionInViewFilter.doFilterInternal(OpenSessionInViewFilter.java:198)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:75)
+at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:231)
+at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:149)
+at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)
+at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:854)
+at java.lang.Thread.run(Thread.java:745)</div>
+							</div>
+						</div>`;
+					break;
+
+				case 'aprovacoes':
+					html = `
+						<div class="warning-box">
+							<div class="warning-icon">⚠</div>
+							<div class="warning-content">
+								<span class="warning_message">Todas as aprovações já foram tratadas</span>
+								<p style="margin: 10px 0 0 0; color: #666;">Não existem aprovações pendentes no momento.</p>
+							</div>
+						</div>
+						<div class="details-box">
+							<h4>📋 Lista de Aprovações Recentes</h4>
+							<table class="aprovacoes-table">
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>Tipo</th>
+										<th>Descrição</th>
+										<th>Data</th>
+										<th>Estado</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>APR-2026-001</td>
+										<td>Cabimento</td>
+										<td>Aquisição de Material de Escritório</td>
+										<td>25/02/2026</td>
+										<td class="status-tratado">Tratado</td>
+									</tr>
+									<tr>
+										<td>APR-2026-002</td>
+										<td>Pagamento</td>
+										<td>Pagamento de Salários - Janeiro 2026</td>
+										<td>26/02/2026</td>
+										<td class="status-tratado">Tratado</td>
+									</tr>
+									<tr>
+										<td>APR-2026-003</td>
+										<td>Orçamento</td>
+										<td>Revisão Orçamental Q1 2026</td>
+										<td>27/02/2026</td>
+										<td class="status-tratado">Tratado</td>
+									</tr>
+									<tr>
+										<td>APR-2026-004</td>
+										<td>Transferência</td>
+										<td>Transferência entre Rubricas</td>
+										<td>27/02/2026</td>
+										<td class="status-tratado">Tratado</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>`;
+					break;
+			}
+
+			container.innerHTML = html;
+		}
+
+		// Mostrar aprovações inicial ao carregar a página (landing page)
+		window.addEventListener('load', function() {
+			showError('aprovacoes');
+		});
+
+		// Funções simuladas do e-SISTAFE (se não existirem)
+		function addShowLoading() {
+			// Simulação de loading
+		}
+
+		var CEDSIF = CEDSIF || {};
+		CEDSIF.InputMask = CEDSIF.InputMask || {};
+		CEDSIF.InputMask.setupElementMasks = function() {
+			// Simulação de máscaras
+		};
+
+		function setupInputFields() {
+			// Simulação de setup
+		}
+
+		// Emular Event.observe do Prototype.js se não existir
+		var Event = Event || {};
+		Event.observe = Event.observe || function(element, event, handler) {
+			if (element === window && event === 'load') {
+				window.addEventListener('load', handler);
+			}
+		};
+
+		Event.observe(window, 'load', function() {
+			addShowLoading();
+			CEDSIF.InputMask.setupElementMasks();
+			setupInputFields();
+		});
+	</script>
+
+	<script language="javascript">
+		document.body.style.backgroundColor = "#ffffff";
+		document.body.style.backgroundImage = "url(/images/env-test.png)";
+		document.body.style.backgroundRepeat = "repeat";
+	</script>
+</body>
+</html>

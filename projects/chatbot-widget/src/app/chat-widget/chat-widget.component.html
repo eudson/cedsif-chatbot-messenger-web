@@ -1,0 +1,244 @@
+<div class="chat-widget-container" [ngStyle]="customStyles">
+  <!-- Floating Chat Button -->
+  <button
+    class="chat-toggle-button"
+    [class.open]="isOpen"
+    (click)="toggleChat()"
+    aria-label="Abrir chat de suporte">
+    <svg *ngIf="!isOpen" class="icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+      <circle cx="12" cy="10" r="1.5"/>
+      <circle cx="8" cy="10" r="1.5"/>
+      <circle cx="16" cy="10" r="1.5"/>
+    </svg>
+    <svg *ngIf="isOpen" class="icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    </svg>
+  </button>
+
+  <!-- Chat Window -->
+  <div
+    class="chat-window"
+    [class.open]="isOpen"
+    [class.minimized]="isMinimized"
+    role="dialog"
+    aria-label="Chat de suporte e-SISTAFE">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-info">
+        <div class="header-avatar">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h3>{{ title }}</h3>
+          <span class="module-badge" *ngIf="module">{{ module }}</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button
+          class="header-button"
+          (click)="startNewConversation()"
+          title="Nova conversa"
+          aria-label="Iniciar nova conversa">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+        </button>
+        <button
+          class="header-button"
+          (click)="minimizeChat()"
+          title="Minimizar"
+          aria-label="Minimizar chat">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13H5v-2h14v2z"/>
+          </svg>
+        </button>
+        <button
+          class="header-button"
+          (click)="closeChat()"
+          title="Fechar"
+          aria-label="Fechar chat">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="chat-messages" #messagesContainer>
+      <div
+        *ngFor="let message of messages; let i = index"
+        class="message"
+        [class.user]="message.role === 'user'"
+        [class.assistant]="message.role === 'assistant'">
+
+        <!-- Avatar -->
+        <div class="message-avatar" *ngIf="message.role === 'assistant'">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </div>
+
+        <!-- Message Content -->
+        <div class="message-content">
+          <div class="message-bubble">
+            <p [innerHTML]="message.content"></p>
+
+            <!-- Streaming indicator -->
+            <span *ngIf="message.isStreaming" class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </div>
+
+          <!-- Sources -->
+          <div class="message-sources" *ngIf="message.sources && message.sources.length > 0">
+            <span class="sources-label">Fontes:</span>
+            <div class="sources-list">
+              <button
+                *ngFor="let source of message.sources"
+                class="source-chip"
+                (click)="openSource(source)"
+                [title]="source.snippet || source.title">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                </svg>
+                {{ formatSource(source) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback Buttons -->
+          <div
+            class="message-feedback"
+            *ngIf="message.role === 'assistant' && !message.isStreaming">
+            <button
+              class="feedback-button"
+              [class.active]="message.feedbackGiven === 'positive'"
+              [disabled]="!!message.feedbackGiven"
+              (click)="submitPositiveFeedback(message)"
+              title="Resposta útil"
+              aria-label="Marcar como útil">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
+              </svg>
+            </button>
+            <button
+              class="feedback-button"
+              [class.active]="message.feedbackGiven === 'negative'"
+              [disabled]="!!message.feedbackGiven"
+              (click)="submitNegativeFeedback(message)"
+              title="Resposta não útil"
+              aria-label="Marcar como não útil">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+              </svg>
+            </button>
+            <span class="feedback-tooltip" *ngIf="showFeedbackTooltip === message.id">
+              Obrigado pelo feedback!
+            </span>
+          </div>
+        </div>
+
+        <!-- User Avatar -->
+        <div class="message-avatar user-avatar" *ngIf="message.role === 'user'">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="loading-indicator" *ngIf="isLoading && messages.length === 0">
+        <div class="spinner"></div>
+        <span>Processando...</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="escalate-section">
+      <button
+        class="analyze-error-button"
+        (click)="analyzePageError()"
+        [disabled]="isLoading"
+        title="Captura automaticamente o erro da página e analisa com IA">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+        </svg>
+        Analisar Erro da Página
+      </button>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <textarea
+        #messageInput
+        class="chat-input"
+        [(ngModel)]="inputMessage"
+        (keydown)="onKeyDown($event)"
+        placeholder="Digite sua mensagem..."
+        [disabled]="isLoading"
+        rows="1"
+        aria-label="Mensagem"></textarea>
+      <button
+        class="send-button"
+        (click)="sendMessage()"
+        [disabled]="!inputMessage.trim() || isLoading"
+        aria-label="Enviar mensagem">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Escalate Form Modal -->
+    <div class="escalate-modal" *ngIf="showEscalateForm">
+      <div class="escalate-form">
+        <h4>Abrir Chamado de Suporte</h4>
+        <p class="escalate-info">
+          Descreva seu problema e nossa equipe entrará em contato.
+        </p>
+
+        <div class="form-group">
+          <label for="escalate-email">E-mail (opcional)</label>
+          <input
+            type="email"
+            id="escalate-email"
+            [(ngModel)]="escalateEmail"
+            placeholder="seu.email@exemplo.com">
+        </div>
+
+        <div class="form-group">
+          <label for="escalate-description">Descrição do problema *</label>
+          <textarea
+            id="escalate-description"
+            [(ngModel)]="escalateDescription"
+            placeholder="Descreva detalhadamente o problema que está enfrentando..."
+            rows="4"
+            required></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn-cancel"
+            (click)="hideEscalateDialog()"
+            [disabled]="isLoading">
+            Cancelar
+          </button>
+          <button
+            class="btn-submit"
+            (click)="escalateToSupport()"
+            [disabled]="!escalateDescription.trim() || isLoading">
+            <span *ngIf="!isLoading">Enviar</span>
+            <span *ngIf="isLoading">Enviando...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

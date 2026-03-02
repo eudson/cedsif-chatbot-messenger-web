@@ -1,0 +1,174 @@
+<div class="page-header">
+  <h1>Base de Conhecimento RAG</h1>
+  <button mat-raised-button color="primary" (click)="fileInput.click()" [disabled]="isLoading()">
+    <mat-icon>{{ isLoading() ? 'hourglass_empty' : 'cloud_upload' }}</mat-icon>
+    {{ isLoading() ? 'A carregar...' : 'Carregar Documento' }}
+  </button>
+  <input #fileInput type="file" hidden (change)="onFileSelected($event)"
+         accept=".pdf,.docx,.txt,.xlsx">
+</div>
+
+<mat-card>
+  <mat-tab-group>
+    <!-- Tab: Documentos -->
+    <mat-tab label="Documentos">
+      <div class="tab-content">
+        <div class="upload-section">
+          <mat-form-field appearance="outline">
+            <mat-label>Módulo de destino</mat-label>
+            <mat-select [(ngModel)]="selectedModule">
+              <mat-option *ngFor="let module of modules" [value]="module">
+                {{ module }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-stroked-button (click)="fileInput.click()" [disabled]="isLoading()">
+            <mat-icon>add</mat-icon>
+            Seleccionar Ficheiro
+          </button>
+
+          <p class="upload-hint">
+            Formatos suportados: PDF, DOCX, TXT, XLSX
+          </p>
+        </div>
+
+        <div *ngIf="isLoading()" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>A carregar documentos...</p>
+        </div>
+
+        <div *ngIf="!isLoading() && documents().length === 0" class="empty-state">
+          <mat-icon>article</mat-icon>
+          <h3>Nenhum documento carregado</h3>
+          <p>Carregue documentos PDF, DOCX ou TXT para alimentar a base de conhecimento do chatbot.</p>
+        </div>
+
+        <table mat-table [dataSource]="documents()" *ngIf="!isLoading() && documents().length > 0" class="documents-table">
+          <!-- Coluna: Nome do Ficheiro -->
+          <ng-container matColumnDef="fileName">
+            <th mat-header-cell *matHeaderCellDef>Ficheiro</th>
+            <td mat-cell *matCellDef="let doc">
+              <div class="file-info">
+                <mat-icon class="file-icon">description</mat-icon>
+                <div>
+                  <div class="file-name">{{ doc.fileName }}</div>
+                  <div class="file-title" *ngIf="doc.title">{{ doc.title }}</div>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Coluna: Módulo -->
+          <ng-container matColumnDef="module">
+            <th mat-header-cell *matHeaderCellDef>Módulo</th>
+            <td mat-cell *matCellDef="let doc">
+              <mat-chip>{{ doc.module }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Coluna: Status -->
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let doc">
+              <mat-chip [class.active-chip]="doc.active" [class.inactive-chip]="!doc.active">
+                <mat-icon>{{ doc.active ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ doc.active ? 'Activo' : 'Desactivado' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Coluna: Chunks -->
+          <ng-container matColumnDef="chunkCount">
+            <th mat-header-cell *matHeaderCellDef>Fragmentos</th>
+            <td mat-cell *matCellDef="let doc">{{ doc.chunkCount || 0 }}</td>
+          </ng-container>
+
+          <!-- Coluna: Tamanho -->
+          <ng-container matColumnDef="fileSize">
+            <th mat-header-cell *matHeaderCellDef>Tamanho</th>
+            <td mat-cell *matCellDef="let doc">{{ formatFileSize(doc.fileSize) }}</td>
+          </ng-container>
+
+          <!-- Coluna: Data de Indexação -->
+          <ng-container matColumnDef="lastIndexedAt">
+            <th mat-header-cell *matHeaderCellDef>Indexado em</th>
+            <td mat-cell *matCellDef="let doc">
+              {{ doc.lastIndexedAt ? formatDate(doc.lastIndexedAt) : 'Pendente' }}
+            </td>
+          </ng-container>
+
+          <!-- Coluna: Acções -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acções</th>
+            <td mat-cell *matCellDef="let doc">
+              <button *ngIf="doc.active"
+                      mat-icon-button
+                      color="warn"
+                      (click)="deleteDocument(doc)"
+                      matTooltip="Desactivar documento">
+                <mat-icon>block</mat-icon>
+              </button>
+              <button *ngIf="!doc.active"
+                      mat-icon-button
+                      color="primary"
+                      (click)="activateDocument(doc)"
+                      matTooltip="Activar e re-indexar documento">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator
+          *ngIf="!isLoading() && documents().length > 0"
+          [length]="totalElements()"
+          [pageSize]="pageSize()"
+          [pageIndex]="currentPage()"
+          [pageSizeOptions]="[10, 20, 50]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </mat-tab>
+
+    <!-- Tab: Estatísticas -->
+    <mat-tab label="Estatísticas">
+      <div class="tab-content">
+        <div class="stats-grid">
+          <mat-card *ngFor="let stat of collections" class="stat-card">
+            <mat-card-content>
+              <div class="stat-header">
+                <mat-icon>folder</mat-icon>
+                <h3>{{ stat.module }}</h3>
+              </div>
+              <div class="stat-metrics">
+                <div class="metric">
+                  <span class="metric-value">{{ stat.documentCount }}</span>
+                  <span class="metric-label">Documentos</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ stat.chunkCount }}</span>
+                  <span class="metric-label">Fragmentos</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="reindex-section">
+          <button mat-raised-button color="accent" (click)="reindexAll()" [disabled]="isLoading()">
+            <mat-icon>refresh</mat-icon>
+            Re-indexar Todos os Documentos
+          </button>
+          <p class="reindex-hint">
+            Use esta opção se documentos foram actualizados ou se houver problemas na indexação.
+          </p>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</mat-card>

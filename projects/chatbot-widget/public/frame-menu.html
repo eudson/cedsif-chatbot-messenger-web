@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+	<meta charset="UTF-8">
+	<title>Menu e-SISTAFE</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f5f5f5;
+			overflow-x: hidden;
+		}
+
+		.logo-container {
+			background: #ffffff;
+			padding: 15px;
+			text-align: center;
+			border-bottom: 1px solid #ddd;
+		}
+
+		.logo-container img {
+			width: 80px;
+			height: auto;
+			margin-bottom: 8px;
+		}
+
+		.logo-container h3 {
+			color: #333;
+			font-size: 13px;
+			font-weight: normal;
+			margin-top: 5px;
+		}
+
+		.menu-section {
+			padding: 15px 10px;
+		}
+
+		.menu-section h4 {
+			color: #555;
+			font-size: 11px;
+			text-transform: uppercase;
+			margin-bottom: 10px;
+			padding-left: 5px;
+			border-left: 3px solid #4CAF50;
+		}
+
+		.menu-button {
+			display: block;
+			width: 100%;
+			padding: 12px 15px;
+			margin: 5px 0;
+			background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 13px;
+			text-align: left;
+			transition: all 0.3s ease;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+
+		.menu-button:hover {
+			background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+			box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+			transform: translateX(3px);
+		}
+
+		.menu-button:active {
+			transform: translateX(1px);
+			box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+		}
+
+		.menu-button::before {
+			content: "▶ ";
+			margin-right: 8px;
+			font-size: 10px;
+		}
+
+		.divider {
+			height: 1px;
+			background: #ddd;
+			margin: 15px 5px;
+		}
+	</style>
+</head>
+<body>
+	<!-- Brasão de Moçambique -->
+	<div class="logo-container">
+		<img src="logo.gif" alt="Brasão de Moçambique">
+		<h3>e-SISTAFE</h3>
+	</div>
+
+	<!-- Operações -->
+	<div class="menu-section">
+		<button class="menu-button" onclick="parent.frames['contents'].showError('aprovacoes')">Aprovações</button>
+		<button class="menu-button" onclick="parent.frames['contents'].showError('tx-em-curso')">Novo Cabimento</button>
+		<button class="menu-button" onclick="parent.frames['contents'].showError('nullpointer')">Consultar Saldo</button>
+		<button class="menu-button" onclick="parent.frames['contents'].showError('classcast')">Relatórios</button>
+	</div>
+</body>
+</html>
