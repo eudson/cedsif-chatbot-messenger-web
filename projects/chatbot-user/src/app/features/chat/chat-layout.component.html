@@ -1,0 +1,196 @@
+<div class="chat-container">
+  <!-- Sidebar -->
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      mode="side"
+      [opened]="sidebarOpen()"
+      class="sidebar">
+
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="logo-section">
+          <img src="logo.gif" alt="e-SISTAFE" class="sidebar-logo" />
+          <h3 class="app-title">e-SISTAFE</h3>
+          <span class="app-subtitle">Assistente Inteligente</span>
+        </div>
+        <button mat-raised-button color="primary" class="new-chat-btn" (click)="startNewChat()">
+          <mat-icon>add</mat-icon>
+          Nova Conversa
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-section">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Pesquisar conversas</mat-label>
+          <input matInput [(ngModel)]="searchQuery">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Conversation History -->
+      <div class="conversations-list">
+        <div class="section-title">Histórico</div>
+        @if (filteredConversations().length === 0) {
+          <div class="empty-state">
+            <mat-icon>chat_bubble_outline</mat-icon>
+            <p>Nenhuma conversa encontrada</p>
+          </div>
+        } @else {
+          @for (conv of filteredConversations(); track conv.id) {
+            <div
+              class="conversation-item"
+              [class.active]="currentSessionId() === conv.sessionId"
+              (click)="selectConversation(conv)">
+              <div class="conv-icon">
+                <mat-icon>chat</mat-icon>
+              </div>
+              <div class="conv-content">
+                <div class="conv-preview">{{ conv.lastMessage || 'Nova conversa' }}</div>
+                <div class="conv-meta">
+                  <span class="module-badge">{{ conv.module }}</span>
+                  <span class="message-count">{{ conv.messageCount }} msgs</span>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <mat-divider></mat-divider>
+        <div class="user-section">
+          <div class="user-info">
+            <mat-icon>account_circle</mat-icon>
+            <div class="user-details">
+              <strong>{{ user()?.fullName || user()?.username }}</strong>
+              <small>{{ user()?.email }}</small>
+            </div>
+          </div>
+          <button mat-icon-button [matMenuTriggerFor]="userMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Sair</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </mat-sidenav>
+
+    <!-- Main Chat Area -->
+    <mat-sidenav-content>
+      <div class="chat-main">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <button mat-icon-button (click)="sidebarOpen.set(!sidebarOpen())">
+            <mat-icon>menu</mat-icon>
+          </button>
+
+          <span class="spacer"></span>
+
+          <div class="header-info">
+            <mat-icon matTooltip="Sistema de Assistência Inteligente">info</mat-icon>
+          </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area">
+          @if (messages().length === 0) {
+            <div class="welcome-screen">
+              <img src="logo.gif" alt="e-SISTAFE" class="welcome-logo">
+              <h1>e-SISTAFE Chatbot</h1>
+              <p>Como posso ajudá-lo hoje?</p>
+              <div class="suggestions">
+                <button mat-stroked-button (click)="userInput = 'Como fazer uma despesa?'; sendMessage()">
+                  <mat-icon>help_outline</mat-icon>
+                  Como fazer uma despesa?
+                </button>
+                <button mat-stroked-button (click)="userInput = 'Explicar processo de receita'; sendMessage()">
+                  <mat-icon>help_outline</mat-icon>
+                  Processo de receita
+                </button>
+                <button mat-stroked-button (click)="userInput = 'O que é o CUT?'; sendMessage()">
+                  <mat-icon>help_outline</mat-icon>
+                  O que é o CUT?
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="messages-list">
+              @for (msg of messages(); track $index) {
+                <div class="message" [class.user-message]="msg.role === 'user'" [class.assistant-message]="msg.role === 'assistant'">
+                  <div class="message-avatar">
+                    @if (msg.role === 'user') {
+                      <mat-icon>person</mat-icon>
+                    } @else {
+                      <mat-icon>smart_toy</mat-icon>
+                    }
+                  </div>
+                  <div class="message-content">
+                    <div class="message-text">
+                      {{ msg.content }}@if (msg.isStreaming) {<span class="streaming-cursor"></span>}
+                    </div>
+
+                    @if (msg.role === 'assistant' && msg.ragScore !== undefined && !msg.isStreaming) {
+                      <div class="message-meta">
+                        <span class="confidence">Confiança: {{ (msg.ragScore * 100) | number:'1.0-0' }}%</span>
+                        @if (msg.sources && msg.sources.length > 0) {
+                          <span class="sources">{{ msg.sources.length }} fonte(s)</span>
+                        }
+                      </div>
+                    }
+
+                    @if (msg.role === 'assistant' && msg.id && !msg.isStreaming) {
+                      <div class="message-actions">
+                        <button
+                          mat-icon-button
+                          [class.active]="msg.feedbackGiven === 'positive'"
+                          [disabled]="msg.feedbackGiven !== null"
+                          (click)="submitFeedback(msg, 'positive')"
+                          matTooltip="Útil">
+                          <mat-icon>thumb_up</mat-icon>
+                        </button>
+                        <button
+                          mat-icon-button
+                          [class.active]="msg.feedbackGiven === 'negative'"
+                          [disabled]="msg.feedbackGiven !== null"
+                          (click)="submitFeedback(msg, 'negative')"
+                          matTooltip="Não útil">
+                          <mat-icon>thumb_down</mat-icon>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <div class="input-container">
+            <textarea
+              [(ngModel)]="userInput"
+              (keydown.enter)="handleEnterKey($event)"
+              placeholder="Digite sua mensagem... (Shift+Enter para nova linha)"
+              rows="1"
+              [disabled]="isLoading()"></textarea>
+            <button
+              mat-icon-button
+              (click)="sendMessage()"
+              [disabled]="!userInput.trim() || isLoading()"
+              color="primary">
+              <mat-icon>send</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

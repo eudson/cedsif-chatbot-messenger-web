@@ -26,8 +26,9 @@ import { AuthService } from '../../core/auth/auth.service';
       <mat-card class="login-card">
         <mat-card-header>
           <mat-card-title>
-            <img src="assets/logo-cedsif.png" alt="CEDSIF" class="logo" />
-            <h1>Chatbot AI - Gestão de Mensagens</h1>
+            <img src="logo.gif" alt="e-SISTAFE" class="logo" />
+            <h1>e-SISTAFE Chatbot</h1>
+            <p class="subtitle">Consola de Administração</p>
           </mat-card-title>
         </mat-card-header>
 
@@ -89,10 +90,19 @@ import { AuthService } from '../../core/auth/auth.service';
       }
 
       h1 {
-        font-size: 20px;
+        font-size: 22px;
         text-align: center;
+        margin: 0 0 8px 0;
+        color: #1976d2;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        display: block;
+        text-align: center;
+        font-size: 13px;
+        color: #666;
         margin: 0;
-        color: #333;
       }
     }
 

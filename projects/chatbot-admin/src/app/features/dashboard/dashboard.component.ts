@@ -348,10 +348,10 @@ export class DashboardComponent implements OnInit {
             color: '#4caf50'
           },
           {
-            title: 'Incidentes Abertos',
-            value: data.general.openIncidents.toString(),
-            icon: 'report_problem',
-            color: '#ff9800'
+            title: 'Satisfação Geral',
+            value: (data.general.avgSatisfaction || 0).toFixed(1) + '%',
+            icon: 'sentiment_satisfied',
+            color: data.general.avgSatisfaction >= 70 ? '#4caf50' : data.general.avgSatisfaction >= 50 ? '#ff9800' : '#f44336'
           },
           {
             title: 'Taxa Escalação',
@@ -397,7 +397,8 @@ export class DashboardComponent implements OnInit {
   }
 
   private calculateTotalDocs(modules: any[]): number {
-    return modules.reduce((sum, m) => sum + (m.documentCount || 0), 0);
+    if (!modules || modules.length === 0) return 0;
+    return modules.reduce((sum, m) => sum + (m.documentCount ?? 0), 0);
   }
 
   getSatisfactionClass(score: number): string {

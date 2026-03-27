@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+	<meta charset="UTF-8">
+	<title>Banner e-SISTAFE</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+			background: #ffffff;
+			height: 95px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 20px;
+			color: #333;
+			border-bottom: 2px solid #e0e0e0;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+		}
+
+		.banner-left {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.banner-left h1 {
+			font-size: 24px;
+			font-weight: bold;
+			margin: 0;
+		}
+
+		.banner-left p {
+			font-size: 12px;
+			opacity: 0.9;
+			margin: 0;
+		}
+
+		.banner-right {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			font-size: 13px;
+		}
+
+		.user-info {
+			text-align: right;
+		}
+
+		.user-info strong {
+			display: block;
+			font-size: 14px;
+		}
+
+		.user-info span {
+			font-size: 11px;
+			opacity: 0.8;
+		}
+
+		.logout-btn {
+			background: #f5f5f5;
+			border: 1px solid #ddd;
+			color: #333;
+			padding: 8px 16px;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			transition: all 0.3s ease;
+		}
+
+		.logout-btn:hover {
+			background: #e0e0e0;
+			border-color: #999;
+		}
+	</style>
+</head>
+<body>
+	<div class="banner-left">
+		<div>
+			<h1>e-SISTAFE</h1>
+			<p>Sistema de Administração Financeira do Estado</p>
+		</div>
+	</div>
+
+	<div class="banner-right">
+		<div class="user-info">
+			<strong>Utilizador: Admin</strong>
+			<span>UGB: Ministério das Finanças</span>
+		</div>
+		<button class="logout-btn" onclick="alert('Terminar Sessão')">Sair</button>
+	</div>
+</body>
+</html>

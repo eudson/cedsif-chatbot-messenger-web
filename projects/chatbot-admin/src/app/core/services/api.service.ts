@@ -42,11 +42,13 @@ export class ApiService {
     page = 0,
     size = 20,
     module?: ModuleType,
-    escalated?: boolean
+    escalated?: boolean,
+    sort = 'lastActivityAt,desc'
   ): Observable<Page<ConversationSummary>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString());
+      .set('size', size.toString())
+      .set('sort', sort);
 
     if (module) params = params.set('module', module);
     if (escalated !== undefined) params = params.set('escalated', escalated.toString());
@@ -67,13 +69,17 @@ export class ApiService {
   getDocuments(
     page = 0,
     size = 20,
-    module?: ModuleType
+    module?: ModuleType,
+    fileName?: string,
+    active?: boolean
   ): Observable<Page<DocumentSummary>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
     if (module) params = params.set('module', module);
+    if (fileName) params = params.set('fileName', fileName);
+    if (active !== undefined) params = params.set('active', active.toString());
 
     return this.http.get<ApiResponse<Page<DocumentSummary>>>(
       `${this.baseUrl}/v1/knowledge/documents`, { params }
@@ -155,6 +161,26 @@ export class ApiService {
     ).pipe(map(r => normalizePage(r.data!)));
   }
 
+  getIncidentsFiltered(
+    page = 0,
+    size = 20,
+    status?: string,
+    title?: string,
+    ticketId?: number
+  ): Observable<Page<GlpiIncident>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (status) params = params.set('status', status);
+    if (title) params = params.set('title', title);
+    if (ticketId) params = params.set('ticketId', ticketId.toString());
+
+    return this.http.get<ApiResponse<Page<GlpiIncident>>>(
+      `${this.baseUrl}/v1/admin/incidents`, { params }
+    ).pipe(map(r => normalizePage(r.data!)));
+  }
+
   getPendingIncidents(page = 0, size = 20): Observable<Page<GlpiIncident>> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -178,6 +204,12 @@ export class ApiService {
   getIncident(id: number): Observable<GlpiIncident> {
     return this.http.get<ApiResponse<GlpiIncident>>(
       `${this.baseUrl}/v1/admin/incidents/${id}`
+    ).pipe(map(r => r.data!));
+  }
+
+  getIncidentWithConversation(id: number): Observable<{ incident: any; conversation: any }> {
+    return this.http.get<ApiResponse<{ incident: any; conversation: any }>>(
+      `${this.baseUrl}/v1/admin/incidents/${id}/conversation`
     ).pipe(map(r => r.data!));
   }
 
@@ -262,6 +294,38 @@ export class ApiService {
   sendFeedback(feedback: FeedbackRequest): Observable<void> {
     return this.http.post<ApiResponse<void>>(
       `${this.baseUrl}/v1/chat/feedback`, feedback
+    ).pipe(map(() => undefined));
+  }
+
+  // ============ Integration Configs ============
+
+  getAllIntegrations(): Observable<Record<string, any>> {
+    return this.http.get<ApiResponse<Record<string, any>>>(
+      `${this.baseUrl}/v1/admin/integrations`
+    ).pipe(map(r => r.data!));
+  }
+
+  getIntegration(type: string): Observable<any> {
+    return this.http.get<ApiResponse<any>>(
+      `${this.baseUrl}/v1/admin/integrations/${type}`
+    ).pipe(map(r => r.data!));
+  }
+
+  saveIntegration(type: string, data: { enabled: boolean; configs: Record<string, string> }): Observable<any> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.baseUrl}/v1/admin/integrations/${type}`, data
+    ).pipe(map(r => r.data!));
+  }
+
+  testIntegrationConnection(type: string): Observable<{ success: boolean; message: string; details: string }> {
+    return this.http.post<ApiResponse<{ success: boolean; message: string; details: string }>>(
+      `${this.baseUrl}/v1/admin/integrations/${type}/test`, null
+    ).pipe(map(r => r.data!));
+  }
+
+  initializeIntegrationDefaults(): Observable<void> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.baseUrl}/v1/admin/integrations/init-defaults`, null
     ).pipe(map(() => undefined));
   }
 }

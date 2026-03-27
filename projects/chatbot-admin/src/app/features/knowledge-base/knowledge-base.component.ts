@@ -11,6 +11,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { DocumentSummary, ModuleType, CollectionStats } from '../../core/models/api.models';
@@ -31,7 +33,9 @@ import { DocumentSummary, ModuleType, CollectionStats } from '../../core/models/
     MatSnackBarModule,
     MatSelectModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
   templateUrl: './knowledge-base.component.html',
   styleUrls: ['./knowledge-base.component.scss']
@@ -50,6 +54,11 @@ export class KnowledgeBaseComponent implements OnInit {
   pageSize = signal(20);
   currentPage = signal(0);
 
+  // Filtros
+  filterModule: ModuleType | null = null;
+  filterFileName = '';
+  filterActive: boolean | null = null;
+
   modules: ModuleType[] = ['DESPESA', 'RECEITA', 'CUT', 'TRIBUTACAO', 'SUPORTE', 'DEV'];
 
   displayedColumns = ['fileName', 'module', 'active', 'chunkCount', 'fileSize', 'lastIndexedAt', 'actions'];
@@ -61,7 +70,13 @@ export class KnowledgeBaseComponent implements OnInit {
 
   loadDocuments(): void {
     this.isLoading.set(true);
-    this.api.getDocuments(this.currentPage(), this.pageSize()).subscribe({
+    this.api.getDocuments(
+      this.currentPage(),
+      this.pageSize(),
+      this.filterModule || undefined,
+      this.filterFileName || undefined,
+      this.filterActive ?? undefined
+    ).subscribe({
       next: (page) => {
         this.documents.set(page.content);
         this.totalElements.set(page.totalElements);
@@ -73,6 +88,19 @@ export class KnowledgeBaseComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onFilterChange(): void {
+    this.currentPage.set(0);
+    this.loadDocuments();
+  }
+
+  clearFilters(): void {
+    this.filterModule = null;
+    this.filterFileName = '';
+    this.filterActive = null;
+    this.currentPage.set(0);
+    this.loadDocuments();
   }
 
   onPageChange(event: PageEvent): void {

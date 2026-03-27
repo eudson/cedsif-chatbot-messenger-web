@@ -150,6 +150,7 @@ export interface GeneralMetrics {
   avgResponseTimeMs: number;
   openIncidents: number;
   incidentsCreated: number;
+  avgSatisfaction: number;
 }
 
 export interface ModuleMetrics {
@@ -157,6 +158,7 @@ export interface ModuleMetrics {
   description: string;
   conversationCount: number;
   satisfactionScore: number;
+  documentCount: number;
 }
 
 export interface IncidentMetrics {

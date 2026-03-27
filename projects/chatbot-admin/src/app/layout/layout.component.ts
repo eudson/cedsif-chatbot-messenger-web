@@ -34,8 +34,9 @@ interface NavItem {
       <!-- Sidebar -->
       <mat-sidenav #sidenav mode="side" [opened]="sidenavOpen()">
         <div class="sidenav-header">
-          <img src="assets/logo-cedsif.png" alt="CEDSIF" class="logo" />
-          <h2>Chatbot AI</h2>
+          <img src="logo.gif" alt="República de Moçambique" class="logo" />
+          <h2>e-SISTAFE Chatbot</h2>
+          <span class="subtitle">Consola de Administração</span>
         </div>
 
         <mat-nav-list>
@@ -96,16 +97,25 @@ interface NavItem {
       padding: 24px 16px;
       text-align: center;
       border-bottom: 1px solid rgba(0,0,0,0.12);
+      background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
 
       .logo {
-        height: 48px;
-        margin-bottom: 8px;
+        height: 64px;
+        margin-bottom: 12px;
       }
 
       h2 {
         margin: 0;
         font-size: 18px;
         color: #1976d2;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        display: block;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.54);
+        margin-top: 4px;
       }
     }
 
